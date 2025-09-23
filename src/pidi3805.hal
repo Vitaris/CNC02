@@ -1,0 +1,99 @@
+# PIDI-3805 HAL configuration
+loadrt pidi Board0=3805,11111,1111111
+loadrt pid names=pid_x,pid_y,pid_z
+
+addf pidi.HwComm servo-thread
+addf pid_x.do-pid-calcs servo-thread
+addf pid_y.do-pid-calcs servo-thread
+addf pid_z.do-pid-calcs servo-thread
+
+addf motion-command-handler servo-thread
+addf motion-controller servo-thread
+
+# Estop button 
+#net estop pidi-3805.0.bin.3.in iocontrol.0.emc-enable-in    
+setp iocontrol.0.emc-enable-in 1
+
+net xenable joint.0.amp-enable-out => pidi-3805.0.step.1.enable
+net yenable joint.1.amp-enable-out => pidi-3805.0.step.2.enable
+net zenable joint.2.amp-enable-out => pidi-3805.0.step.3.enable
+
+net xenable pid_x.enable
+net yenable pid_y.enable
+net zenable pid_z.enable
+
+net Xpos joint.0.motor-pos-cmd => pid_x.command
+net Ypos joint.1.motor-pos-cmd => pid_y.command
+net Zpos joint.2.motor-pos-cmd => pid_z.command
+
+net Xvel pid_x.output => pidi-3805.0.step.1.speed
+net Yvel pid_y.output => pidi-3805.0.step.2.speed
+net Zvel pid_z.output => pidi-3805.0.step.3.speed
+
+net Xposfb pidi-3805.0.step.1.position => pid_x.feedback
+net Yposfb pidi-3805.0.step.2.position => pid_y.feedback
+net Zposfb pidi-3805.0.step.3.position => pid_z.feedback
+
+net Xposfb => joint.0.motor-pos-fb
+net Yposfb => joint.1.motor-pos-fb
+net Zposfb => joint.2.motor-pos-fb
+
+setp pidi-3805.0.step.1.scale [JOINT_0]SCALE
+setp pidi-3805.0.step.2.scale [JOINT_1]SCALE
+setp pidi-3805.0.step.3.scale [JOINT_2]SCALE
+
+net Xhomesw pidi-3805.0.bin.0.in-not joint.0.home-sw-in
+net Yhomesw pidi-3805.0.bin.1.in-not joint.1.home-sw-in
+net Zhomesw pidi-3805.0.bin.2.in-not joint.2.home-sw-in
+
+setp pid_x.Pgain [PID]P
+setp pid_x.Igain [PID]I
+setp pid_x.Dgain [PID]D
+setp pid_x.bias [PID]BIAS
+setp pid_x.FF0 [PID]FF0
+setp pid_x.FF1 [PID]FF1
+setp pid_x.FF2 [PID]FF2
+setp pid_x.deadband [PID]DEADBAND
+setp pid_x.maxoutput [JOINT_0]MAX_VELOCITY
+
+setp pid_y.Pgain [PID]P
+setp pid_y.Igain [PID]I
+setp pid_y.Dgain [PID]D
+setp pid_y.bias [PID]BIAS
+setp pid_y.FF0 [PID]FF0
+setp pid_y.FF1 [PID]FF1
+setp pid_y.FF2 [PID]FF2
+setp pid_y.deadband [PID]DEADBAND
+setp pid_y.maxoutput [JOINT_1]MAX_VELOCITY
+
+setp pid_z.Pgain [PID]P
+setp pid_z.Igain [PID]I
+setp pid_z.Dgain [PID]D
+setp pid_z.bias [PID]BIAS
+setp pid_z.FF0 [PID]FF0
+setp pid_z.FF1 [PID]FF1
+setp pid_z.FF2 [PID]FF2
+setp pid_z.deadband [PID]DEADBAND
+setp pid_z.maxoutput [JOINT_2]MAX_VELOCITY
+
+#**************   Spindle   **************
+net spindle spindle.0.on pidi-3805.0.bout.10.out
+
+
+#**************   Manual tool change   **************
+loadusr -W hal_manualtoolchange
+net tool-change iocontrol.0.tool-change => hal_manualtoolchange.change
+net tool-changed iocontrol.0.tool-changed <= hal_manualtoolchange.changed
+net tool-number iocontrol.0.tool-prep-number => hal_manualtoolchange.number
+net tool-prepare-loopback iocontrol.0.tool-prepare => iocontrol.0.tool-prepared
+
+
+# in case they were linked already
+unlinkp iocontrol.0.tool-change
+unlinkp iocontrol.0.tool-changed
+
+#net tool-change hal_manualtoolchange.change iocontrol.0.tool-change 
+#net tool-changed hal_manualtoolchange.changed iocontrol.0.tool-changed
+#net tool-prep-number hal_manualtoolchange.number iocontrol.0.tool-prep-numberfile:///home/pi/machinekit/configs/pidi-3805_2017_05_04-0830/pidi3805.ini
+
+#net probe pidi-3805.0.bin.4.in motion.probe-input
