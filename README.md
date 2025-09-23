@@ -1,6 +1,5 @@
-# CNC02
+# CNC02 - LinuxCNC Configuration
 ![CNC02](cnc_02_cad.jpg)
-## Configuration of my CNC02
 
 ## Overview
 DIY 3‑axis hobby CNC router controlled by LinuxCNC. Uses a single PIDI‑3805 board for step/dir, homing inputs, and spindle on/off. The config is a compact example of implementing a PIDI‑based stepper setup with a the HW based step generators.
